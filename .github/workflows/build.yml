@@ -11,6 +11,7 @@ permissions:
 env:
   CARGO_TERM_COLOR: always
   ARTI_ROOT_DIR: /tmp/arti
+  ARTI_CRATE: /tmp/arti/crates/arti
   APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
 
 defaults:
@@ -77,7 +78,7 @@ jobs:
         id: release_commit_id
         run: |
           cd /tmp/
-          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti/-/tree/main/crates/arti' -o arti
+          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti/-/tree/main' -o arti
 
           cd /tmp/arti/
           ARTI_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
@@ -95,7 +96,9 @@ jobs:
         uses: nicolaiunrein/cargo-get@master
         with:
           subcommand: package.version
-          options: --entry /tmp/arti/Cargo.toml
+          #options: --entry /tmp/arti/Cargo.toml
+          options: --entry "$ARTI_CRATE/Cargo.toml"
+          
 
       - name: Set ARTI_VERSION env var
         id: release_version
