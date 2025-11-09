@@ -3,7 +3,7 @@ arti-static-builds
 
 Description
 ------------
-The great ["arti"](https://gitlab.torproject.org/tpo/core/arti) tool, from the TOR project, automatically compiled when there is a new release.
+The great ["arti"](https://arti.torproject.org/) tool, from the TOR project, automatically compiled when there is a new release.
 
 The building workflow is [here](https://github.com/mycodedoesnotcompile2/arti-static-builds/blob/main/.github/workflows/build.yml).
 
