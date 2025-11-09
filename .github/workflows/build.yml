@@ -96,9 +96,7 @@ jobs:
         uses: nicolaiunrein/cargo-get@master
         with:
           subcommand: package.version
-          #options: --entry /tmp/arti/Cargo.toml
           options: --entry "$ARTI_CRATE/Cargo.toml"
-          
 
       - name: Set ARTI_VERSION env var
         id: release_version
@@ -143,7 +141,9 @@ jobs:
         
       - name: Run build
         run: |
-          cd $ARTI_ROOT_DIR
+          #cd $ARTI_ROOT_DIR
+          cd $ARTI_CRATE
+          
           #cargo build --release --verbose --target $TARGET
           cargo build --release --target $TARGET --features static
 
