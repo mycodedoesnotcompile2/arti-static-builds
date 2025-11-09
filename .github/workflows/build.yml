@@ -1,0 +1,208 @@
+name: Build binary
+
+on:
+  #workflow_dispatch
+  schedule:
+    - cron: '5 5 * * *'
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  ARTI_ROOT_DIR: /tmp/arti
+  APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - TARGET: x86_64-unknown-linux-gnu
+            OS: ubuntu-latest
+          
+          - TARGET: x86_64-unknown-linux-musl
+            OS: ubuntu-latest
+          
+          - TARGET: aarch64-unknown-linux-gnu
+            OS: ubuntu-24.04-arm
+          
+          - TARGET: aarch64-unknown-linux-musl
+            OS: ubuntu-24.04-arm
+          
+          - TARGET: armv7-unknown-linux-gnueabihf
+            OS: ubuntu-latest
+          
+          #- TARGET: armv7-unknown-linux-musleabihf
+          #  OS: ubuntu-latest
+          
+          - TARGET: arm-unknown-linux-gnueabihf
+            OS: ubuntu-latest
+          
+          #- TARGET: arm-unknown-linux-musleabihf
+          #  OS: ubuntu-latest
+          
+          # - TARGET: x86_64-apple-darwin
+          #   OS: macos-latest
+          
+          # - TARGET: x86_64-pc-windows-msvc
+          #   OS: windows-latest
+            
+    runs-on: ${{ matrix.OS }}
+
+    env:
+      NAME: arti_binary
+      TARGET: ${{ matrix.TARGET }}
+      OS: ${{ matrix.OS }}
+
+    outputs:
+      ARTI_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ARTI_CURRENT_COMMIT_ID }}
+      ARTI_VERSION: ${{ steps.release_version.outputs.ARTI_VERSION }}
+
+    steps:
+      - name: Get latest release tag of this repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/
+          ARTI_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/arti-static-builds/ --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
+          echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_ENV
+          
+      - name: Clone arti repo and check if there is a new and uncompiled yet version
+        id: release_commit_id
+        run: |
+          cd /tmp/
+          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti' -o arti
+
+          cd /tmp/arti/
+          ARTI_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
+          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_ENV
+          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
+
+          # case: no new commit => abort the workflow
+          if [[ $ARTI_PREBUILT_LATEST_TAG == $ARTI_CURRENT_COMMIT_ID ]]; then
+            echo "[!] No new version to compile"
+            exit 100
+          fi
+
+      - name: Get arti version
+        id: release_version_cargo_get
+        uses: nicolaiunrein/cargo-get@master
+        with:
+          subcommand: package.version
+          options: --entry /tmp/arti/Cargo.toml
+
+      - name: Set ARTI_VERSION env var
+        id: release_version
+        run: |
+          ARTI_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
+          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_ENV
+          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_OUTPUT
+        
+      - name: Install and configure dependencies
+        run: |
+          if [[ $OS =~ ^ubuntu.*$ ]]; then
+            $APT update
+            $APT install crossbuild-essential-armhf libsqlite3-dev
+          fi
+
+          # for musl builds
+          if [[ $TARGET == *"-musl"* ]]; then
+            $APT install musl-tools
+          fi
+
+          # for arm targets
+          if [[ $TARGET == "arm"* ]]; then
+            cd "$ARTI_ROOT_DIR"
+            cargo install --force --locked bindgen-cli
+          fi
+
+          # some additional configuration for cross-compilation on linux
+          cat >>~/.cargo/config.toml <<EOF
+          [target.armv7-unknown-linux-gnueabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          [target.armv7-unknown-linux-musleabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          [target.arm-unknown-linux-gnueabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          [target.arm-unknown-linux-musleabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          EOF
+      
+      - name: Install rust target
+        run: rustup target add $TARGET
+
+        
+      - name: Run build
+        run: |
+          cd $ARTI_ROOT_DIR
+          #cargo build --release --verbose --target $TARGET
+          cargo build --release --target $TARGET --features static
+
+      
+      - name: List build information
+        run: |
+          OLD_ARTI_BIN_PATH="$ARTI_ROOT_DIR/target/$TARGET/release/arti"
+          ARTI_BIN_PATH="$ARTI_ROOT_DIR-$ARTI_VERSION-$TARGET"
+          ARTI_BIN_HASH_PATH="$ARTI_BIN_PATH.sha256.txt"
+          
+          cp -f "$OLD_ARTI_BIN_PATH" "$ARTI_BIN_PATH"
+          ls -alh "$ARTI_BIN_PATH"
+
+          cd "$(dirname "$ARTI_BIN_PATH")"
+          sha256sum --tag "$(basename "$ARTI_BIN_PATH")" | tee "$ARTI_BIN_HASH_PATH"
+          
+          echo "ARTI_BIN_PATH=$ARTI_BIN_PATH" >> $GITHUB_ENV
+          echo "ARTI_BIN_HASH_PATH=$ARTI_BIN_HASH_PATH" >> $GITHUB_ENV
+          
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.TARGET }}
+          path: |
+            ${{ env.ARTI_BIN_PATH }}
+            ${{ env.ARTI_BIN_HASH_PATH }}
+
+
+  deploy_release:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+       ARTI_CURRENT_COMMIT_ID: ${{ needs.build.outputs.ARTI_CURRENT_COMMIT_ID }}
+       ARTI_VERSION: ${{ needs.build.outputs.ARTI_VERSION }}
+    
+    steps:
+     - name: Download Artifact
+       uses: actions/download-artifact@v4
+       with:
+        pattern: binary-*
+        merge-multiple: true
+        path: /tmp/results
+
+     - name: List target
+       run: |
+          cd "/tmp/results"
+          ls -alh
+  
+          RELEASE_NOTES="/tmp/release_notes.txt"
+          echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+          
+          cat *.sha256.txt > "$RELEASE_NOTES"
+          mkdir -p "/tmp/hashes"
+          mv -f *.sha256.txt "/tmp/hashes/"
+  
+     - name: Create a new Github release
+       uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 #v2.3.2
+       with:
+         make_latest: true
+         body_path: ${{ env.RELEASE_NOTES }}
+         name: version ${{ env.ARTI_VERSION }} - build ${{ env.ARTI_CURRENT_COMMIT_ID }}
+         tag_name: ${{ env.ARTI_CURRENT_COMMIT_ID }}
+         files: |
+           /tmp/results/oniux-*
