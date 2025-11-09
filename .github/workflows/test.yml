@@ -93,12 +93,13 @@ jobs:
   
       - name: Run build
         run: |
+          set -xe
           #cd $ARTI_ROOT_DIR
           cd $ARTI_CRATE
 
           if [[ $TARGET == "arm"* ]]; then
             ls -alh "/tmp/arti/crates/tor-memquota/src/lib.rs"
             PATCH_OVERFLOW='#![allow(arithmetic_overflow)]'
-            sed -i "/allow\(unknown_lints\)/a $PATCH_OVERFLOW" "/tmp/arti/crates/tor-memquota/src/lib.rs"
+            sed --debug -i "/allow\(unknown_lints\)/a $PATCH_OVERFLOW" "/tmp/arti/crates/tor-memquota/src/lib.rs"
             grep -i 'allow(arithmetic_overflow)' "/tmp/arti/crates/tor-memquota/src/lib.rs" -A 2 -B 2
           fi
