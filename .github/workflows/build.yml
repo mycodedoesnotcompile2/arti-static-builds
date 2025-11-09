@@ -142,18 +142,15 @@ jobs:
         
       - name: Run build
         run: |
-          #cd $ARTI_ROOT_DIR
           cd $ARTI_CRATE
 
           if [[ $TARGET == "arm"* ]]; then
             PATCH_OVERFLOW='#![allow(arithmetic_overflow)]'
-            sed -i "/allow\(unknown_lints\)/a $PATCH_OVERFLOW" "/tmp/arti/crates/tor-memquota/src/lib.rs"
-            grep -i 'allow(arithmetic_overflow)' "/tmp/arti/crates/tor-memquota/src/lib.rs" -A 2 -B 2
+            sed -i "/allow(unknown_lints)/a $PATCH_OVERFLOW" "$ARTI_ROOT_DIR/crates/tor-memquota/src/lib.rs"
+            grep -A 2 -B 2 'allow(arithmetic_overflow)' "$ARTI_ROOT_DIR/crates/tor-memquota/src/lib.rs"
           fi
           
-          #cargo build --release --verbose --target $TARGET
           cargo build --release --target $TARGET --features static
-
       
       - name: List build information
         run: |
