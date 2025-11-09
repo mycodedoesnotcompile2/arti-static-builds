@@ -145,7 +145,7 @@ jobs:
           cd $ARTI_CRATE
           
           #cargo build --release --verbose --target $TARGET
-          cargo build --release --target $TARGET --features static
+          cargo build --release --target $TARGET --features static --config 'profile.dev.overflow-checks=false'
 
       
       - name: List build information
