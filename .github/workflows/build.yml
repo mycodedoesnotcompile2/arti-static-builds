@@ -78,7 +78,7 @@ jobs:
         id: release_commit_id
         run: |
           cd /tmp/
-          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti/-/tree/main' -o arti
+          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti' -o arti
 
           cd /tmp/arti/
           ARTI_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
