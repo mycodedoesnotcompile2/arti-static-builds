@@ -151,7 +151,7 @@ jobs:
           fi
           
           #cargo build --release --verbose --target $TARGET
-          cargo build --release --target $TARGET --features static --config 'profile.dev.overflow-checks=false'
+          cargo build --release --target $TARGET --features static
 
       
       - name: List build information
