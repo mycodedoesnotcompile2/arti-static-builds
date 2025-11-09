@@ -100,6 +100,6 @@ jobs:
           if [[ $TARGET == "arm"* ]]; then
             ls -alh "/tmp/arti/crates/tor-memquota/src/lib.rs"
             PATCH_OVERFLOW='#![allow(arithmetic_overflow)]'
-            sed --debug -i "/allow\(unknown_lints\)/a $PATCH_OVERFLOW" "/tmp/arti/crates/tor-memquota/src/lib.rs"
-            grep -i 'allow(arithmetic_overflow)' "/tmp/arti/crates/tor-memquota/src/lib.rs" -A 2 -B 2
+            sed -i "/allow\(unknown_lints\)/a $PATCH_OVERFLOW" "/tmp/arti/crates/tor-memquota/src/lib.rs"
+            grep -A 2 -B 2 -i 'allow(arithmetic_overflow)' "/tmp/arti/crates/tor-memquota/src/lib.rs" 
           fi
