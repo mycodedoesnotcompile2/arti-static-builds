@@ -1,0 +1,104 @@
+name: Build binary
+
+on:
+  workflow_dispatch
+  #schedule:
+  #  - cron: '5 5 * * *'
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  ARTI_ROOT_DIR: /tmp/arti
+  ARTI_CRATE: /tmp/arti/crates/arti
+  APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # - TARGET: x86_64-unknown-linux-gnu
+          #   OS: ubuntu-latest
+          
+          # - TARGET: x86_64-unknown-linux-musl
+          #   OS: ubuntu-latest
+          
+          # - TARGET: aarch64-unknown-linux-gnu
+          #   OS: ubuntu-24.04-arm
+          
+          # - TARGET: aarch64-unknown-linux-musl
+          #   OS: ubuntu-24.04-arm
+          
+          - TARGET: armv7-unknown-linux-gnueabihf
+            OS: ubuntu-latest
+          
+          #- TARGET: armv7-unknown-linux-musleabihf
+          #  OS: ubuntu-latest
+          
+          - TARGET: arm-unknown-linux-gnueabihf
+            OS: ubuntu-latest
+          
+          #- TARGET: arm-unknown-linux-musleabihf
+          #  OS: ubuntu-latest
+          
+          # - TARGET: x86_64-apple-darwin
+          #   OS: macos-latest
+          
+          # - TARGET: x86_64-pc-windows-msvc
+          #   OS: windows-latest
+            
+    runs-on: ${{ matrix.OS }}
+
+    env:
+      NAME: arti_binary
+      TARGET: ${{ matrix.TARGET }}
+      OS: ${{ matrix.OS }}
+
+    outputs:
+      ARTI_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ARTI_CURRENT_COMMIT_ID }}
+      ARTI_VERSION: ${{ steps.release_version.outputs.ARTI_VERSION }}
+
+    steps:
+      - name: Clone arti repo and check if there is a new and uncompiled yet version
+        id: release_commit_id
+        run: |
+          cd /tmp/
+          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti' -o arti
+
+          cd /tmp/arti/
+          ARTI_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
+          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_ENV
+          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
+
+      - name: Get arti version
+        id: release_version_cargo_get
+        uses: nicolaiunrein/cargo-get@master
+        with:
+          subcommand: package.version
+          options: --entry "$ARTI_CRATE/Cargo.toml"
+
+      - name: Set ARTI_VERSION env var
+        id: release_version
+        run: |
+          ARTI_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
+          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_ENV
+          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_OUTPUT      
+  
+      - name: Run build
+        run: |
+          #cd $ARTI_ROOT_DIR
+          cd $ARTI_CRATE
+
+          if [[ $TARGET == "arm"* ]]; then
+            ls -alh "/tmp/arti/crates/tor-memquota/src/lib.rs"
+            PATCH_OVERFLOW='#![allow(arithmetic_overflow)]'
+            sed -i "/allow\(unknown_lints\)/a $PATCH_OVERFLOW" "/tmp/arti/crates/tor-memquota/src/lib.rs"
+            grep -i 'allow(arithmetic_overflow)' "/tmp/arti/crates/tor-memquota/src/lib.rs" -A 2 -B 2
+          fi
