@@ -102,5 +102,5 @@ jobs:
             PATCH_OVERFLOW='#![allow(arithmetic_overflow)]'
             sed -i "/allow(unknown_lints)/a $PATCH_OVERFLOW" "/tmp/arti/crates/tor-memquota/src/lib.rs"
             cat "/tmp/arti/crates/tor-memquota/src/lib.rs"
-            grep -A 2 -B 2 'allow\(arithmetic_overflow\)' "/tmp/arti/crates/tor-memquota/src/lib.rs" 
+            grep -A 2 -B 2 'allow(arithmetic_overflow)' "/tmp/arti/crates/tor-memquota/src/lib.rs" 
           fi
