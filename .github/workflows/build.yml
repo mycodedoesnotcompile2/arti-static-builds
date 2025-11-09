@@ -70,7 +70,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd /tmp/
-          ARTI_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/arti-static-builds/ --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
+          ARTI_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/arti-static-builds --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
           echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_ENV
           
       - name: Clone arti repo and check if there is a new and uncompiled yet version
