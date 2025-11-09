@@ -39,14 +39,14 @@ jobs:
           - TARGET: armv7-unknown-linux-gnueabihf
             OS: ubuntu-latest
           
-          #- TARGET: armv7-unknown-linux-musleabihf
-          #  OS: ubuntu-latest
+          - TARGET: armv7-unknown-linux-musleabihf
+            OS: ubuntu-latest
           
           - TARGET: arm-unknown-linux-gnueabihf
             OS: ubuntu-latest
           
-          #- TARGET: arm-unknown-linux-musleabihf
-          #  OS: ubuntu-latest
+          - TARGET: arm-unknown-linux-musleabihf
+            OS: ubuntu-latest
           
           # - TARGET: x86_64-apple-darwin
           #   OS: macos-latest
@@ -201,6 +201,8 @@ jobs:
           echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
           
           cat *.sha256.txt > "$RELEASE_NOTES"
+          sha256sum -c *.sha256.txt
+          
           mkdir -p "/tmp/hashes"
           mv -f *.sha256.txt "/tmp/hashes/"
   
@@ -212,4 +214,4 @@ jobs:
          name: version ${{ env.ARTI_VERSION }} - build ${{ env.ARTI_CURRENT_COMMIT_ID }}
          tag_name: ${{ env.ARTI_CURRENT_COMMIT_ID }}
          files: |
-           /tmp/results/oniux-*
+           /tmp/results/arti-*
