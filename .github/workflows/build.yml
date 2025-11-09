@@ -39,14 +39,14 @@ jobs:
           - TARGET: armv7-unknown-linux-gnueabihf
             OS: ubuntu-latest
           
-          - TARGET: armv7-unknown-linux-musleabihf
-            OS: ubuntu-latest
+          #- TARGET: armv7-unknown-linux-musleabihf
+          #  OS: ubuntu-latest
           
           - TARGET: arm-unknown-linux-gnueabihf
             OS: ubuntu-latest
           
-          - TARGET: arm-unknown-linux-musleabihf
-            OS: ubuntu-latest
+          #- TARGET: arm-unknown-linux-musleabihf
+          #  OS: ubuntu-latest
           
           # - TARGET: x86_64-apple-darwin
           #   OS: macos-latest
