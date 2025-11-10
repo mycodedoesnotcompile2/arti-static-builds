@@ -55,11 +55,14 @@ jobs:
           #   OS: windows-latest
             
     runs-on: ${{ matrix.OS }}
+    container:
+      image: ${{ matrix.CONTAINER }}
 
     env:
       NAME: arti_binary
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
+      CONTAINER: ${{ matrix.CONTAINER }}
 
     outputs:
       ARTI_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ARTI_CURRENT_COMMIT_ID }}
