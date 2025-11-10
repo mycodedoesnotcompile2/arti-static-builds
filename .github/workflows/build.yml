@@ -80,7 +80,7 @@ jobs:
       OS: ${{ matrix.OS }}
       CONTAINER: ${{ matrix.CONTAINER }}
 
-      ARTI_PREBUILT_LATEST_TAG: ${{ needs.get_last_tag.outputs.ARTI_PREBUILT_LATEST_TAG }}
+      ARTI_PREBUILT_LATEST_TAG: ${{ needs.get_prebuilt_last_tag.outputs.ARTI_PREBUILT_LATEST_TAG }}
 
     outputs:
       ARTI_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ARTI_CURRENT_COMMIT_ID }}
