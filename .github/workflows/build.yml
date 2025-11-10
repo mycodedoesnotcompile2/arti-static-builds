@@ -19,7 +19,7 @@ defaults:
     shell: bash
 
 jobs:
-  get_last_tag:
+  get_prebuilt_last_tag:
     runs-on: ubuntu-latest
     outputs:
       ARTI_PREBUILT_LATEST_TAG: ${{ steps.release_latest_tag.outputs.ARTI_PREBUILT_LATEST_TAG }}
@@ -35,7 +35,7 @@ jobs:
           echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_OUTPUT
   
   build:
-    needs: get_last_tag
+    needs: get_prebuilt_last_tag
     strategy:
       fail-fast: false
       matrix:
@@ -55,9 +55,9 @@ jobs:
           - TARGET: armv7-unknown-linux-gnueabihf
             OS: ubuntu-latest
           
-          - TARGET: armv7-unknown-linux-musleabihf
-            OS: ubuntu-latest
-            CONTAINER: ghcr.io/rust-cross/rust-musl-cross:armv7-musleabihf
+          # - TARGET: armv7-unknown-linux-musleabihf
+          #   OS: ubuntu-latest
+          #   CONTAINER: ghcr.io/rust-cross/rust-musl-cross:armv7-musleabihf
           
           - TARGET: arm-unknown-linux-gnueabihf
             OS: ubuntu-latest
@@ -76,7 +76,6 @@ jobs:
       image: ${{ matrix.CONTAINER }}
 
     env:
-      NAME: arti_binary
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
       CONTAINER: ${{ matrix.CONTAINER }}
@@ -88,14 +87,6 @@ jobs:
       ARTI_VERSION: ${{ steps.release_version.outputs.ARTI_VERSION }}
 
     steps:
-      # - name: Get latest release tag of this repo
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     cd /tmp/
-      #     ARTI_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/arti-static-builds --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
-      #     echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_ENV
-          
       - name: Clone arti repo and check if there is a new and uncompiled yet version
         id: release_commit_id
         run: |
