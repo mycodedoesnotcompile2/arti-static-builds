@@ -19,7 +19,23 @@ defaults:
     shell: bash
 
 jobs:
+  get_last_tag:
+    runs-on: ubuntu-latest
+    outputs:
+      ARTI_PREBUILT_LATEST_TAG: ${{ steps.release_latest_tag.outputs.ARTI_PREBUILT_LATEST_TAG }}
+
+    steps:
+      - name: Get latest release tag of this repo
+        id: release_latest_tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/
+          ARTI_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/arti-static-builds --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
+          echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_OUTPUT
+  
   build:
+    needs: get_last_tag
     strategy:
       fail-fast: false
       matrix:
@@ -65,18 +81,20 @@ jobs:
       OS: ${{ matrix.OS }}
       CONTAINER: ${{ matrix.CONTAINER }}
 
+      ARTI_PREBUILT_LATEST_TAG: ${{ needs.get_last_tag.outputs.ARTI_PREBUILT_LATEST_TAG }}
+
     outputs:
       ARTI_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ARTI_CURRENT_COMMIT_ID }}
       ARTI_VERSION: ${{ steps.release_version.outputs.ARTI_VERSION }}
 
     steps:
-      - name: Get latest release tag of this repo
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd /tmp/
-          ARTI_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/arti-static-builds --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
-          echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_ENV
+      # - name: Get latest release tag of this repo
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     cd /tmp/
+      #     ARTI_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/arti-static-builds --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
+      #     echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_ENV
           
       - name: Clone arti repo and check if there is a new and uncompiled yet version
         id: release_commit_id
