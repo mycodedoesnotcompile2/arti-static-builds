@@ -35,6 +35,7 @@ jobs:
           cd /tmp/
           ARTI_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/arti-static-builds --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
           echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_ENV
 
       - name: Clone arti repo and check if there is a new and uncompiled yet version
         id: release_commit_id
@@ -123,6 +124,11 @@ jobs:
 
 
     steps:
+      - name: Clone arti repo
+        run: |
+          cd /tmp/
+          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti.git' arti
+      
       - name: Install and configure dependencies
         run: |
           if [[ $OS =~ ^ubuntu.*$ ]]; then
