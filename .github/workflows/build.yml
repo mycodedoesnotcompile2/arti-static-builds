@@ -44,7 +44,7 @@ jobs:
 
           cd /tmp/arti/
           ARTI_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
-          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_ENV
+          #echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_ENV
           echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
 
           # case: no new commit => abort the workflow
@@ -60,11 +60,11 @@ jobs:
           subcommand: package.version
           options: --entry "$ARTI_CRATE/Cargo.toml"
 
-      - name: Set ARTI_VERSION env var
+      - name: Set ARTI_VERSION build variable
         id: release_version
         run: |
           ARTI_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
-          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_ENV
+          #echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_ENV
           echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_OUTPUT
 
 
@@ -97,14 +97,17 @@ jobs:
           - TARGET: arm-unknown-linux-gnueabihf
             OS: ubuntu-latest
           
-          #- TARGET: arm-unknown-linux-musleabihf
-          #  OS: ubuntu-latest
+          - TARGET: aarch64-apple-darwin
+            OS: macos-latest
+
+          - TARGET: x86_64-apple-darwin
+            OS: macos-26-intel
           
-          # - TARGET: x86_64-apple-darwin
-          #   OS: macos-latest
-          
-          # - TARGET: x86_64-pc-windows-msvc
-          #   OS: windows-latest
+          - TARGET: x86_64-pc-windows-msvc
+            OS: windows-latest
+
+          - TARGET: aarch64-pc-windows-msvc
+            OS: windows-11-arm
             
     runs-on: ${{ matrix.OS }}
     container:
