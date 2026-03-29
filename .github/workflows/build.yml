@@ -205,8 +205,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
-       ARTI_CURRENT_COMMIT_ID: ${{ needs.build.outputs.ARTI_CURRENT_COMMIT_ID }}
-       ARTI_VERSION: ${{ needs.build.outputs.ARTI_VERSION }}
+       ARTI_CURRENT_COMMIT_ID: ${{ needs.checkout.outputs.ARTI_CURRENT_COMMIT_ID }}
+       ARTI_VERSION: ${{ needs.checkout.outputs.ARTI_VERSION }}
     
     steps:
      - name: Download Artifact
