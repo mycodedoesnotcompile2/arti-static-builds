@@ -191,7 +191,7 @@ jobs:
 
           cd "$(dirname "$ARTI_BIN_PATH")"
           sha256sum --tag "$(basename "$ARTI_BIN_PATH")" | tee "$ARTI_BIN_HASH_PATH"
-          ldd "$ARTI_BIN_PATH"
+          ldd "$ARTI_BIN_PATH" || true
           "$ARTI_BIN_PATH" -h
           
           echo "ARTI_BIN_PATH=$ARTI_BIN_PATH" >> $GITHUB_ENV
