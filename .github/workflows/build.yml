@@ -213,7 +213,6 @@ jobs:
            path: |
              ${{ env.ARTI_BIN_HASH_PATH }}
 
-#################
   deploy_release:
     needs: build
     runs-on: ubuntu-latest
