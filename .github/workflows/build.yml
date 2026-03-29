@@ -1,9 +1,9 @@
 name: Build binary
 
 on:
-  #workflow_dispatch
-  schedule:
-    - cron: '5 5 * * *'
+  workflow_dispatch
+  #schedule:
+  #  - cron: '5 5 * * *'
 
 permissions:
   contents: write
@@ -19,11 +19,13 @@ defaults:
     shell: bash
 
 jobs:
-  get_prebuilt_last_tag:
+  checkout:
     runs-on: ubuntu-latest
     outputs:
       ARTI_PREBUILT_LATEST_TAG: ${{ steps.release_latest_tag.outputs.ARTI_PREBUILT_LATEST_TAG }}
-
+      ARTI_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ARTI_CURRENT_COMMIT_ID }}
+      ARTI_VERSION: ${{ steps.release_version.outputs.ARTI_VERSION }}
+    
     steps:
       - name: Get latest release tag of this repo
         id: release_latest_tag
@@ -33,9 +35,42 @@ jobs:
           cd /tmp/
           ARTI_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/arti-static-builds --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
           echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Clone arti repo and check if there is a new and uncompiled yet version
+        id: release_commit_id
+        run: |
+          cd /tmp/
+          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti.git' -o arti
+
+          cd /tmp/arti/
+          ARTI_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
+          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_ENV
+          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
+
+          # case: no new commit => abort the workflow
+          if [[ $ARTI_PREBUILT_LATEST_TAG == $ARTI_CURRENT_COMMIT_ID ]]; then
+            echo "[!] No new version to compile"
+            exit 100
+          fi
+
+      - name: Get arti version
+        id: release_version_cargo_get
+        uses: nicolaiunrein/cargo-get@master
+        with:
+          subcommand: package.version
+          options: --entry "$ARTI_CRATE/Cargo.toml"
+
+      - name: Set ARTI_VERSION env var
+        id: release_version
+        run: |
+          ARTI_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
+          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_ENV
+          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_OUTPUT
+
+
   
   build:
-    needs: get_prebuilt_last_tag
+    needs: checkout
     strategy:
       fail-fast: false
       matrix:
@@ -80,44 +115,11 @@ jobs:
       OS: ${{ matrix.OS }}
       CONTAINER: ${{ matrix.CONTAINER }}
 
-      ARTI_PREBUILT_LATEST_TAG: ${{ needs.get_prebuilt_last_tag.outputs.ARTI_PREBUILT_LATEST_TAG }}
+      ARTI_PREBUILT_LATEST_TAG: ${{ needs.checkout.outputs.ARTI_PREBUILT_LATEST_TAG }}
 
-    outputs:
-      ARTI_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ARTI_CURRENT_COMMIT_ID }}
-      ARTI_VERSION: ${{ steps.release_version.outputs.ARTI_VERSION }}
+
 
     steps:
-      - name: Clone arti repo and check if there is a new and uncompiled yet version
-        id: release_commit_id
-        run: |
-          cd /tmp/
-          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti.git' -o arti
-
-          cd /tmp/arti/
-          ARTI_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
-          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_ENV
-          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
-
-          # case: no new commit => abort the workflow
-          if [[ $ARTI_PREBUILT_LATEST_TAG == $ARTI_CURRENT_COMMIT_ID ]]; then
-            echo "[!] No new version to compile"
-            exit 100
-          fi
-
-      - name: Get arti version
-        id: release_version_cargo_get
-        uses: nicolaiunrein/cargo-get@master
-        with:
-          subcommand: package.version
-          options: --entry "$ARTI_CRATE/Cargo.toml"
-
-      - name: Set ARTI_VERSION env var
-        id: release_version
-        run: |
-          ARTI_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
-          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_ENV
-          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_OUTPUT
-        
       - name: Install and configure dependencies
         run: |
           if [[ $OS =~ ^ubuntu.*$ ]]; then
