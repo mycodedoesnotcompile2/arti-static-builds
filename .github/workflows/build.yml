@@ -182,6 +182,10 @@ jobs:
 
           #ARTI_BIN_PATH="$ARTI_ROOT_DIR-$ARTI_VERSION-$TARGET"
           #ARTI_BIN_HASH_PATH="$ARTI_BIN_PATH.sha256.txt"
+
+          if [[ $OS =~ ^windows.*$ ]]; then
+            ARTI_BIN_PATH="${{ runner.temp }}/$ARTI_BIN_NAME-$ARTI_VERSION-$TARGET.exe"
+          fi
           
           ARTI_BIN_PATH="${{ runner.temp }}/$ARTI_BIN_NAME-$ARTI_VERSION-$TARGET"
           ARTI_BIN_HASH_PATH="$ARTI_BIN_PATH.sha256.txt"
