@@ -244,4 +244,4 @@ jobs:
          name: version ${{ env.ARTI_VERSION }} - build ${{ env.ARTI_CURRENT_COMMIT_ID }}
          tag_name: ${{ env.ARTI_CURRENT_COMMIT_ID }}
          files: |
-           /tmp/results/arti-*
+           /tmp/results/${{ env.ARTI_BIN_NAME }}-*
