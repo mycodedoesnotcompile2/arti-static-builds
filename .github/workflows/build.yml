@@ -11,6 +11,7 @@ permissions:
 env:
   CARGO_TERM_COLOR: always
   ARTI_ROOT_DIR: /tmp/arti
+  ARTI_BIN_NAME: arti
   ARTI_CRATE: /tmp/arti/crates/arti
   APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
 
@@ -182,7 +183,7 @@ jobs:
           #ARTI_BIN_PATH="$ARTI_ROOT_DIR-$ARTI_VERSION-$TARGET"
           #ARTI_BIN_HASH_PATH="$ARTI_BIN_PATH.sha256.txt"
           
-          ARTI_BIN_PATH="${{ runner.temp }}-$ARTI_VERSION-$TARGET"
+          ARTI_BIN_PATH="${{ runner.temp }}/$ARTI_BIN_NAME-$ARTI_VERSION-$TARGET"
           ARTI_BIN_HASH_PATH="$ARTI_BIN_PATH.sha256.txt"
           
           cp -f "$OLD_ARTI_BIN_PATH" "$ARTI_BIN_PATH"
