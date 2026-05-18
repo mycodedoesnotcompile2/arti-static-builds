@@ -159,7 +159,11 @@ jobs:
         run: |
           if [[ $OS =~ ^ubuntu.*$ ]]; then
             $APT update
-            $APT install crossbuild-essential-armhf libsqlite3-dev gcc-multilib
+            $APT install libsqlite3-dev
+          fi
+
+          if [[ $OS == ubuntu* && $TARGET == i686* ]]; then
+            $APT install gcc-multilib
           fi
 
           # for musl builds
@@ -169,6 +173,7 @@ jobs:
 
           # for arm targets
           if [[ $TARGET == "arm"* ]]; then
+            $APT install crossbuild-essential-armhf
             cd "$ARTI_ROOT_DIR"
             cargo install --force --locked bindgen-cli
           fi
