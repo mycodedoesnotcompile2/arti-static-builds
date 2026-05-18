@@ -103,8 +103,29 @@ jobs:
 
           - TARGET: i686-unknown-linux-gnu
             OS: ubuntu-latest
+
+          - TARGET: x86_64-unknown-netbsd
+            OS: ubuntu-latest
+
+          - TARGET: x86_64-unknown-freebsd
+            OS: ubuntu-latest
+
+          - TARGET: s390x-unknown-linux-gnu
+            OS: ubuntu-latest
+
+          - TARGET: riscv64gc-unknown-linux-gnu
+            OS: ubuntu-latest
+
+          - TARGET: powerpc-unknown-linux-gnu
+            OS: ubuntu-latest
+
+          - TARGET: powerpc64-unknown-linux-gnu
+            OS: ubuntu-latest
           
           - TARGET: i686-pc-windows-msvc
+            OS: windows-latest
+
+          - TARGET: i686-pc-windows-gnu
             OS: windows-latest
           
           - TARGET: x86_64-pc-windows-msvc
