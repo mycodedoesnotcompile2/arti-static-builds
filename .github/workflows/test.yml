@@ -138,7 +138,7 @@ jobs:
         run: |
           if [[ $OS =~ ^ubuntu.*$ ]]; then
             $APT update
-            $APT install crossbuild-essential-armhf libsqlite3-dev
+            $APT install crossbuild-essential-armhf libsqlite3-dev gcc-multilib
           fi
 
           # for musl builds
