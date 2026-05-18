@@ -2,15 +2,13 @@ name: Tests
 
 on:
   workflow_dispatch
-  #schedule:
-  #  - cron: '5 5 * * *'
-
-permissions:
-  contents: write
+  # schedule:
+  #   - cron: '5 5 * * *'
 
 env:
   CARGO_TERM_COLOR: always
   ARTI_ROOT_DIR: /tmp/arti
+  ARTI_BIN_NAME: arti
   ARTI_CRATE: /tmp/arti/crates/arti
   APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
 
@@ -19,7 +17,58 @@ defaults:
     shell: bash
 
 jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    outputs:
+      ARTI_PREBUILT_LATEST_TAG: ${{ steps.release_latest_tag.outputs.ARTI_PREBUILT_LATEST_TAG }}
+      ARTI_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ARTI_CURRENT_COMMIT_ID }}
+      ARTI_VERSION: ${{ steps.release_version.outputs.ARTI_VERSION }}
+    
+    steps:
+      - name: Get latest release tag of this repo
+        id: release_latest_tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/
+          ARTI_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/arti-static-builds --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
+          echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "ARTI_PREBUILT_LATEST_TAG=$ARTI_PREBUILT_LATEST_TAG" >> $GITHUB_ENV
+
+      - name: Clone arti repo and check if there is a new and uncompiled yet version
+        id: release_commit_id
+        run: |
+          cd /tmp/
+          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti.git' -o arti
+
+          cd /tmp/arti/
+          ARTI_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
+          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_ENV
+          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
+
+          # case: no new commit => abort the workflow
+          # if [[ $ARTI_PREBUILT_LATEST_TAG == $ARTI_CURRENT_COMMIT_ID ]]; then
+          #   echo "[!] No new version to compile"
+          #   exit 100
+          # fi
+
+      - name: Get arti version
+        id: release_version_cargo_get
+        uses: nicolaiunrein/cargo-get@master
+        with:
+          subcommand: package.version
+          options: --entry "$ARTI_CRATE/Cargo.toml"
+
+      - name: Set ARTI_VERSION build variable
+        id: release_version
+        run: |
+          ARTI_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
+          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_OUTPUT
+
+
+  
   build:
+    needs: checkout
     strategy:
       fail-fast: false
       matrix:
@@ -36,71 +85,166 @@ jobs:
           # - TARGET: aarch64-unknown-linux-musl
           #   OS: ubuntu-24.04-arm
           
-          - TARGET: armv7-unknown-linux-gnueabihf
-            OS: ubuntu-latest
+          # - TARGET: armv7-unknown-linux-gnueabihf
+          #   OS: ubuntu-latest
           
-          #- TARGET: armv7-unknown-linux-musleabihf
-          #  OS: ubuntu-latest
+          # # - TARGET: armv7-unknown-linux-musleabihf
+          # #   OS: ubuntu-latest
+          # #   CONTAINER: ghcr.io/rust-cross/rust-musl-cross:armv7-musleabihf
           
-          - TARGET: arm-unknown-linux-gnueabihf
-            OS: ubuntu-latest
+          # - TARGET: arm-unknown-linux-gnueabihf
+          #   OS: ubuntu-latest
           
-          #- TARGET: arm-unknown-linux-musleabihf
-          #  OS: ubuntu-latest
-          
-          # - TARGET: x86_64-apple-darwin
+          # - TARGET: aarch64-apple-darwin
           #   OS: macos-latest
+
+          # - TARGET: x86_64-apple-darwin
+          #   OS: macos-26-intel
+
+          - TARGET: i686-unknown-linux-gnu
+            OS: ubuntu-latest
           
-          # - TARGET: x86_64-pc-windows-msvc
-          #   OS: windows-latest
+          - TARGET: i686-pc-windows-msvc
+            OS: windows-latest
+          
+          - TARGET: x86_64-pc-windows-msvc
+            OS: windows-latest
+
+          - TARGET: x86_64-pc-windows-gnu
+            OS: windows-latest
+
+          # - TARGET: aarch64-pc-windows-msvc
+          #   OS: windows-11-arm
             
     runs-on: ${{ matrix.OS }}
+    container:
+      image: ${{ matrix.CONTAINER }}
 
     env:
-      NAME: arti_binary
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
+      CONTAINER: ${{ matrix.CONTAINER }}
 
-    outputs:
-      ARTI_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ARTI_CURRENT_COMMIT_ID }}
-      ARTI_VERSION: ${{ steps.release_version.outputs.ARTI_VERSION }}
-
+      ARTI_PREBUILT_LATEST_TAG: ${{ needs.checkout.outputs.ARTI_PREBUILT_LATEST_TAG }}
+      ARTI_VERSION: ${{ needs.checkout.outputs.ARTI_VERSION }}
+      
     steps:
-      - name: Clone arti repo and check if there is a new and uncompiled yet version
-        id: release_commit_id
+      - name: Clone arti repo
         run: |
           cd /tmp/
-          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti' -o arti
-
-          cd /tmp/arti/
-          ARTI_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
-          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_ENV
-          echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
-
-      - name: Get arti version
-        id: release_version_cargo_get
-        uses: nicolaiunrein/cargo-get@master
-        with:
-          subcommand: package.version
-          options: --entry "$ARTI_CRATE/Cargo.toml"
-
-      - name: Set ARTI_VERSION env var
-        id: release_version
+          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti.git' arti
+      
+      - name: Install and configure dependencies
         run: |
-          ARTI_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
-          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_ENV
-          echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_OUTPUT      
-  
+          if [[ $OS =~ ^ubuntu.*$ ]]; then
+            $APT update
+            $APT install crossbuild-essential-armhf libsqlite3-dev
+          fi
+
+          # for musl builds
+          if [[ $TARGET == *"-musl"* ]]; then
+            $APT install musl-tools
+          fi
+
+          # for arm targets
+          if [[ $TARGET == "arm"* ]]; then
+            cd "$ARTI_ROOT_DIR"
+            cargo install --force --locked bindgen-cli
+          fi
+
+          # some additional configuration for cross-compilation on linux
+          cat >>~/.cargo/config.toml <<EOF
+          [target.armv7-unknown-linux-gnueabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          [target.armv7-unknown-linux-musleabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          [target.arm-unknown-linux-gnueabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          [target.arm-unknown-linux-musleabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          EOF
+
+      
+      - name: Install rust target
+        run: rustup target add $TARGET
+
+        
       - name: Run build
         run: |
-          set -xe
-          #cd $ARTI_ROOT_DIR
           cd $ARTI_CRATE
 
           if [[ $TARGET == "arm"* ]]; then
-            ls -alh "/tmp/arti/crates/tor-memquota/src/lib.rs"
             PATCH_OVERFLOW='#![allow(arithmetic_overflow)]'
-            sed -i "/allow(unknown_lints)/a $PATCH_OVERFLOW" "/tmp/arti/crates/tor-memquota/src/lib.rs"
-            cat "/tmp/arti/crates/tor-memquota/src/lib.rs"
-            grep -A 2 -B 2 'allow(arithmetic_overflow)' "/tmp/arti/crates/tor-memquota/src/lib.rs" 
+            sed -i "/allow(unknown_lints)/a $PATCH_OVERFLOW" "$ARTI_ROOT_DIR/crates/tor-memquota/src/lib.rs"
+            grep -A 2 -B 2 'allow(arithmetic_overflow)' "$ARTI_ROOT_DIR/crates/tor-memquota/src/lib.rs"
           fi
+          
+          cargo build --release --target $TARGET --features static
+      
+      - name: List build information
+        run: |
+          OLD_ARTI_BIN_PATH="$ARTI_ROOT_DIR/target/$TARGET/release/arti"
+          
+          ARTI_BIN_PATH="${{ runner.temp }}/$ARTI_BIN_NAME-$ARTI_VERSION-$TARGET"
+          if [[ $OS =~ ^windows.*$ ]]; then
+            ARTI_BIN_PATH="${{ runner.temp }}/$ARTI_BIN_NAME-$ARTI_VERSION-$TARGET.exe"
+          fi
+          ARTI_BIN_HASH_PATH="$ARTI_BIN_PATH.sha256.txt"
+          
+          cp -f "$OLD_ARTI_BIN_PATH" "$ARTI_BIN_PATH"
+          ls -alh "$ARTI_BIN_PATH"
+
+          cd "$(dirname "$ARTI_BIN_PATH")"
+          sha256sum --tag "$(basename "$ARTI_BIN_PATH")" | tee "$ARTI_BIN_HASH_PATH"
+          ldd "$ARTI_BIN_PATH" || true
+          "$ARTI_BIN_PATH" -h || true 
+          
+          echo "ARTI_BIN_PATH=$ARTI_BIN_PATH" >> $GITHUB_ENV
+          echo "ARTI_BIN_HASH_PATH=$ARTI_BIN_HASH_PATH" >> $GITHUB_ENV
+        
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: binary-${{ matrix.TARGET }}
+          path: |
+            ${{ env.ARTI_BIN_PATH }}
+            ${{ env.ARTI_BIN_HASH_PATH }}
+
+  deploy_release:
+    needs: [checkout, build]
+    runs-on: ubuntu-latest
+    env:
+       ARTI_CURRENT_COMMIT_ID: ${{ needs.checkout.outputs.ARTI_CURRENT_COMMIT_ID }}
+       ARTI_VERSION: ${{ needs.checkout.outputs.ARTI_VERSION }}
+    
+    steps:
+     - name: Download Artifact
+       uses: actions/download-artifact@v8
+       with:
+        pattern: binary-*
+        merge-multiple: true
+        path: /tmp/results
+
+     - name: List target
+       run: |
+          cd "/tmp/results"
+          ls -alh
+  
+          RELEASE_NOTES="/tmp/release_notes.txt"
+          echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+          
+          cat *.sha256.txt > "$RELEASE_NOTES"
+          sha256sum -c *.sha256.txt
+          
+          mkdir -p "/tmp/hashes"
+          mv -f *.sha256.txt "/tmp/hashes/"
+  
+     - name: Create a new Github release
+       uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe #v2.6.1
+       with:
+         make_latest: true
+         body_path: ${{ env.RELEASE_NOTES }}
+         name: version ${{ env.ARTI_VERSION }} - build ${{ env.ARTI_CURRENT_COMMIT_ID }}
+         tag_name: ${{ env.ARTI_CURRENT_COMMIT_ID }}
+         files: |
+           /tmp/results/${{ env.ARTI_BIN_NAME }}-*
