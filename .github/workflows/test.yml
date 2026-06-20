@@ -188,7 +188,7 @@ jobs:
           fi
 
           # for everything else
-          if [[ -z "${CC_PKG:-}" ]]; then
+          if [[ -n "${CC_PKG:-}" ]]; then
             $APT install "$CC_PKG"
           fi
 
