@@ -106,9 +106,11 @@ jobs:
 
           - TARGET: x86_64-unknown-netbsd
             OS: ubuntu-latest
+            COMPILER: cross
 
           - TARGET: x86_64-unknown-freebsd
             OS: ubuntu-latest
+            COMPILER: cross
 
           # disabled because merlin doesn't support big-endian
           # - TARGET: s390x-unknown-linux-gnu
@@ -167,7 +169,7 @@ jobs:
         run: |
           set -xe
           if [[ $OS == windows* ]]; then
-            choco install -y wget
+            choco install -yr wget
           fi
           
           if [[ $OS =~ ^ubuntu.*$ ]]; then
