@@ -50,10 +50,10 @@ jobs:
           echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
 
           # case: no new commit => abort the workflow
-          if [[ $ARTI_PREBUILT_LATEST_TAG == $ARTI_CURRENT_COMMIT_ID ]]; then
-            echo "[!] No new version to compile"
-            exit 100
-          fi
+          # if [[ $ARTI_PREBUILT_LATEST_TAG == $ARTI_CURRENT_COMMIT_ID ]]; then
+          #   echo "[!] No new version to compile"
+          #   exit 100
+          # fi
 
       - name: Get arti version
         id: release_version_cargo_get
