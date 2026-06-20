@@ -112,6 +112,7 @@ jobs:
 
           - TARGET: s390x-unknown-linux-gnu
             OS: ubuntu-latest
+            CC_PKG: gcc-s390x-linux-gnu
 
           - TARGET: riscv64gc-unknown-linux-gnu
             OS: ubuntu-latest
@@ -201,6 +202,8 @@ jobs:
           linker = "arm-linux-gnueabihf-gcc"
           [target.riscv64gc-unknown-linux-gnu]
           linker = "riscv64-linux-gnu-gcc"
+          [target.s390x-unknown-linux-gnu]
+          linker = "s390x-linux-gnu-gcc"
           EOF
           
       
