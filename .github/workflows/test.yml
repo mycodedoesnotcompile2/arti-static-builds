@@ -171,7 +171,7 @@ jobs:
         run: |
           set -xe
           if [[ $OS == windows* ]]; then
-            choco install -yr wget
+            choco install -y -r --no-progress wget
           fi
           
           if [[ $OS =~ ^ubuntu.*$ ]]; then
