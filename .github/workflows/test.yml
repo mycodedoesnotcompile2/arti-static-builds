@@ -165,6 +165,7 @@ jobs:
       
       - name: Install and configure dependencies
         run: |
+          set -xe
           if [[ $OS =~ ^ubuntu.*$ ]]; then
             $APT update
             $APT install libsqlite3-dev
