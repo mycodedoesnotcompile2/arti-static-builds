@@ -110,10 +110,11 @@ jobs:
           - TARGET: x86_64-unknown-freebsd
             OS: ubuntu-latest
 
-          - TARGET: s390x-unknown-linux-gnu
-            OS: ubuntu-latest
-            CC_PKG: gcc-s390x-linux-gnu
-            COMPILER: cross
+          # disabled because merlin doesn't support big-endian
+          # - TARGET: s390x-unknown-linux-gnu
+          #   OS: ubuntu-latest
+          #   CC_PKG: gcc-s390x-linux-gnu
+          #   COMPILER: cross
 
           - TARGET: riscv64gc-unknown-linux-gnu
             OS: ubuntu-latest
@@ -160,6 +161,7 @@ jobs:
         run: |
           cd /tmp/
           git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti.git' arti
+
       
       - name: Install and configure dependencies
         run: |
@@ -192,7 +194,7 @@ jobs:
           cargo install cross
           
           wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/cross.toml" -O "$CROSS_CONFIG"
-          wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/config.toml"
+          wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/config.toml" -O "~/.cargo/config.toml"
           
           # some additional configuration for cross-compilation on linux
           # cat >>~/.cargo/config.toml <<EOF
@@ -225,7 +227,7 @@ jobs:
             grep -A 2 -B 2 'allow(arithmetic_overflow)' "$ARTI_ROOT_DIR/crates/tor-memquota/src/lib.rs"
           fi
 
-          if [[ ! -v "COMPILER" ]]; then
+          if [[ -z "${COMPILER:-}" ]]; then
             COMPILER="cargo"
           fi
           $COMPILER build --release --target $TARGET --features static
