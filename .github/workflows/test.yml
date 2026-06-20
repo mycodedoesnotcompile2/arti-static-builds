@@ -194,7 +194,7 @@ jobs:
           cargo install cross
           
           wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/cross.toml" -O "$CROSS_CONFIG"
-          wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/config.toml" -O "~/.cargo/config.toml"
+          wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/config.toml" -O ~/.cargo/config.toml
           
           # some additional configuration for cross-compilation on linux
           # cat >>~/.cargo/config.toml <<EOF
