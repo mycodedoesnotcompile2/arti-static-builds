@@ -115,6 +115,7 @@ jobs:
 
           - TARGET: riscv64gc-unknown-linux-gnu
             OS: ubuntu-latest
+            CC_PKG: gcc-riscv64-linux-gnu
 
           - TARGET: powerpc-unknown-linux-gnu
             OS: ubuntu-latest
@@ -178,6 +179,11 @@ jobs:
             cargo install --force --locked bindgen-cli
           fi
 
+          # for everything else
+          if [[ -v "CC_PKG" ]]; then
+            $APT install "$CC_PKG"
+          fi
+          
           # some additional configuration for cross-compilation on linux
           cat >>~/.cargo/config.toml <<EOF
           [target.armv7-unknown-linux-gnueabihf]
