@@ -188,23 +188,25 @@ jobs:
           fi
 
           cargo install cross
+          
           wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/cross.toml" -O "$CROSS_CONFIG"
+          wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/config.toml"
           
           # some additional configuration for cross-compilation on linux
-          cat >>~/.cargo/config.toml <<EOF
-          [target.armv7-unknown-linux-gnueabihf]
-          linker = "arm-linux-gnueabihf-gcc"
-          [target.armv7-unknown-linux-musleabihf]
-          linker = "arm-linux-gnueabihf-gcc"
-          [target.arm-unknown-linux-gnueabihf]
-          linker = "arm-linux-gnueabihf-gcc"
-          [target.arm-unknown-linux-musleabihf]
-          linker = "arm-linux-gnueabihf-gcc"
-          [target.riscv64gc-unknown-linux-gnu]
-          linker = "riscv64-linux-gnu-gcc"
-          [target.s390x-unknown-linux-gnu]
-          linker = "s390x-linux-gnu-gcc"
-          EOF
+          # cat >>~/.cargo/config.toml <<EOF
+          # [target.armv7-unknown-linux-gnueabihf]
+          # linker = "arm-linux-gnueabihf-gcc"
+          # [target.armv7-unknown-linux-musleabihf]
+          # linker = "arm-linux-gnueabihf-gcc"
+          # [target.arm-unknown-linux-gnueabihf]
+          # linker = "arm-linux-gnueabihf-gcc"
+          # [target.arm-unknown-linux-musleabihf]
+          # linker = "arm-linux-gnueabihf-gcc"
+          # [target.riscv64gc-unknown-linux-gnu]
+          # linker = "riscv64-linux-gnu-gcc"
+          # [target.s390x-unknown-linux-gnu]
+          # linker = "s390x-linux-gnu-gcc"
+          # EOF
           
       
       - name: Install rust target
