@@ -195,6 +195,8 @@ jobs:
           linker = "arm-linux-gnueabihf-gcc"
           [target.arm-unknown-linux-musleabihf]
           linker = "arm-linux-gnueabihf-gcc"
+          [target.riscv64gc-unknown-linux-gnu]
+          linker = "riscv64-linux-gnu-gcc"
           EOF
 
       
