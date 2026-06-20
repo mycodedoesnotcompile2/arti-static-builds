@@ -147,6 +147,7 @@ jobs:
       OS: ${{ matrix.OS }}
       CONTAINER: ${{ matrix.CONTAINER }}
       CC_PKG: ${{ matrix.CC_PKG }}
+      CROSS_CONFIG: /tmp/cross.toml
 
       ARTI_PREBUILT_LATEST_TAG: ${{ needs.checkout.outputs.ARTI_PREBUILT_LATEST_TAG }}
       ARTI_VERSION: ${{ needs.checkout.outputs.ARTI_VERSION }}
@@ -184,6 +185,9 @@ jobs:
           if [[ -v "CC_PKG" ]]; then
             $APT install "$CC_PKG"
           fi
+
+          cargo install cross
+          wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/cross.toml" -O "$CROSS_CONFIG"
           
           # some additional configuration for cross-compilation on linux
           cat >>~/.cargo/config.toml <<EOF
@@ -198,7 +202,7 @@ jobs:
           [target.riscv64gc-unknown-linux-gnu]
           linker = "riscv64-linux-gnu-gcc"
           EOF
-
+          
       
       - name: Install rust target
         run: rustup target add $TARGET
