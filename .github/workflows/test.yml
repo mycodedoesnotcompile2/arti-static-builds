@@ -134,15 +134,15 @@ jobs:
             OS: windows-latest
 
           - TARGET: i686-pc-windows-gnu
-            OS: windows-latest
-            CC_PKG_W: gcc-mingw-w64-i686
+            OS: ubuntu-latest
+            CC_PKG: gcc-mingw-w64-i686
           
           - TARGET: x86_64-pc-windows-msvc
             OS: windows-latest
 
           - TARGET: x86_64-pc-windows-gnu
-            OS: ubuntu-latest
-            CC_PKG: gcc-mingw-w64-i686
+            OS: windows-latest
+            
 
           # - TARGET: aarch64-pc-windows-msvc
           #   OS: windows-11-arm
