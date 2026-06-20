@@ -135,13 +135,14 @@ jobs:
 
           - TARGET: i686-pc-windows-gnu
             OS: windows-latest
-            CC_PKG: gcc-mingw-w64-i686
+            CC_PKG_W: gcc-mingw-w64-i686
           
           - TARGET: x86_64-pc-windows-msvc
             OS: windows-latest
 
           - TARGET: x86_64-pc-windows-gnu
-            OS: windows-latest
+            OS: ubuntu-latest
+            CC_PKG: gcc-mingw-w64-i686
 
           # - TARGET: aarch64-pc-windows-msvc
           #   OS: windows-11-arm
@@ -200,7 +201,7 @@ jobs:
           if [[ -n "${CC_PKG:-}" ]]; then
             $APT install "$CC_PKG"
           fi
-
+          
           cargo install cross
           
           wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/cross.toml" -O "$CROSS_CONFIG"
