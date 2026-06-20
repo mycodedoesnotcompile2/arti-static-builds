@@ -146,6 +146,7 @@ jobs:
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
       CONTAINER: ${{ matrix.CONTAINER }}
+      CC_PKG: ${{ matrix.CC_PKG }}
 
       ARTI_PREBUILT_LATEST_TAG: ${{ needs.checkout.outputs.ARTI_PREBUILT_LATEST_TAG }}
       ARTI_VERSION: ${{ needs.checkout.outputs.ARTI_VERSION }}
