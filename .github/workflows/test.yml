@@ -113,6 +113,7 @@ jobs:
           - TARGET: s390x-unknown-linux-gnu
             OS: ubuntu-latest
             CC_PKG: gcc-s390x-linux-gnu
+            COMPILER: cross
 
           - TARGET: riscv64gc-unknown-linux-gnu
             OS: ubuntu-latest
@@ -148,6 +149,7 @@ jobs:
       OS: ${{ matrix.OS }}
       CONTAINER: ${{ matrix.CONTAINER }}
       CC_PKG: ${{ matrix.CC_PKG }}
+      COMPILER: ${{ matrix.COMPILER }}
       CROSS_CONFIG: /tmp/cross.toml
 
       ARTI_PREBUILT_LATEST_TAG: ${{ needs.checkout.outputs.ARTI_PREBUILT_LATEST_TAG }}
@@ -222,8 +224,11 @@ jobs:
             sed -i "/allow(unknown_lints)/a $PATCH_OVERFLOW" "$ARTI_ROOT_DIR/crates/tor-memquota/src/lib.rs"
             grep -A 2 -B 2 'allow(arithmetic_overflow)' "$ARTI_ROOT_DIR/crates/tor-memquota/src/lib.rs"
           fi
-          
-          cargo build --release --target $TARGET --features static
+
+          if [[ ! -v "COMPILER" ]]; then
+            COMPILER="cargo"
+          fi
+          $COMPILER build --release --target $TARGET --features static
       
       - name: List build information
         run: |
