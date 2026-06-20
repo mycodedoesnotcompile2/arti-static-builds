@@ -135,6 +135,7 @@ jobs:
 
           - TARGET: i686-pc-windows-gnu
             OS: windows-latest
+            CC_PKG: gcc-mingw-w64-i686
           
           - TARGET: x86_64-pc-windows-msvc
             OS: windows-latest
