@@ -233,9 +233,12 @@ jobs:
           OLD_ARTI_BIN_DIR="$ARTI_ROOT_DIR/target/$TARGET/release"
           OLD_ARTI_BIN_PATH="$OLD_ARTI_BIN_DIR/arti"
           ls -alh "$OLD_ARTI_BIN_DIR"
+          if [[ $TARGET == *-windows-* ]]; then
+            OLD_ARTI_BIN_PATH="$OLD_ARTI_BIN_DIR/arti.exe"
+          fi
           
           ARTI_BIN_PATH="${{ runner.temp }}/$ARTI_BIN_NAME-$ARTI_VERSION-$TARGET"
-          if [[ $OS =~ ^windows || $TARGET == *-windows-* ]]; then
+          if [[ $OS =~ ^windows ]]; then
             ARTI_BIN_PATH="${{ runner.temp }}/$ARTI_BIN_NAME-$ARTI_VERSION-$TARGET.exe"
           fi
           ARTI_BIN_HASH_PATH="$ARTI_BIN_PATH.sha256.txt"
