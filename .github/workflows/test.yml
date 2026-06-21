@@ -230,8 +230,9 @@ jobs:
       
       - name: List build information
         run: |
-          OLD_ARTI_BIN_PATH="$ARTI_ROOT_DIR/target/$TARGET/release/arti"
-          ls -alh "$OLD_ARTI_BIN_PATH"
+          OLD_ARTI_BIN_DIR="$ARTI_ROOT_DIR/target/$TARGET/release"
+          OLD_ARTI_BIN_PATH="$OLD_ARTI_BIN_DIR/arti"
+          ls -alh "$OLD_ARTI_BIN_DIR"
           
           ARTI_BIN_PATH="${{ runner.temp }}/$ARTI_BIN_NAME-$ARTI_VERSION-$TARGET"
           if [[ $OS =~ ^windows || $TARGET == *-windows-* ]]; then
