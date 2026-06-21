@@ -104,9 +104,10 @@ jobs:
           - TARGET: i686-unknown-linux-gnu
             OS: ubuntu-latest
 
-          - TARGET: x86_64-unknown-netbsd
-            OS: ubuntu-latest
-            COMPILER: cross
+          # disabled because of this error x86_64-unknown-netbsd/bin/ld: cannot find -lkvm
+          # - TARGET: x86_64-unknown-netbsd
+          #   OS: ubuntu-latest
+          #   COMPILER: cross
 
           - TARGET: x86_64-unknown-freebsd
             OS: ubuntu-latest
@@ -130,6 +131,23 @@ jobs:
           # - TARGET: powerpc64-unknown-linux-gnu
           #   OS: ubuntu-latest
           #   CC_PKG: gcc-powerpc64-linux-gnu
+
+          
+          - TARGET: powerpc64le-unknown-linux-gnu
+            OS: ubuntu-latest
+            CC_PKG: gcc-powerpc64le-linux-gnu
+
+
+          - TARGET: powerpc64le-unknown-linux-musl
+            OS: ubuntu-latest
+            CC_PKG: gcc-powerpc64le-linux-gnu
+
+          - TARGET: x86_64-unknown-illumos
+            OS: ubuntu-latest
+
+          - TARGET: x86_64-pc-solaris
+            OS: ubuntu-latest
+            COMPILER: cross
           
           - TARGET: i686-pc-windows-msvc
             OS: windows-latest
@@ -143,7 +161,6 @@ jobs:
 
           - TARGET: x86_64-pc-windows-gnu
             OS: windows-latest
-            
 
           # - TARGET: aarch64-pc-windows-msvc
           #   OS: windows-11-arm
