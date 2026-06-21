@@ -135,20 +135,25 @@ jobs:
           
           - TARGET: powerpc64le-unknown-linux-gnu
             OS: ubuntu-latest
-            CC_PKG: gcc-powerpc64le-linux-gnu
-
-
-          - TARGET: powerpc64le-unknown-linux-musl
-            OS: ubuntu-latest
-            CC_PKG: gcc-powerpc64le-linux-gnu
-
+            COMPILER: cross
+            
           - TARGET: x86_64-unknown-illumos
             OS: ubuntu-latest
             COMPILER: cross
 
-          - TARGET: x86_64-pc-solaris
+
+          - TARGET: arm-linux-androideabi
             OS: ubuntu-latest
             COMPILER: cross
+
+          - TARGET: armv7-linux-androideabi
+            OS: ubuntu-latest
+            COMPILER: cross
+
+          # # disabled because "could not compile `pwd-grp`"
+          # - TARGET: x86_64-pc-solaris
+          #   OS: ubuntu-latest
+          #   COMPILER: cross
           
           - TARGET: i686-pc-windows-msvc
             OS: windows-latest
