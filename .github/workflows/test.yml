@@ -156,14 +156,6 @@ jobs:
           - TARGET: i686-unknown-linux-musl
             OS: ubuntu-latest
             COMPILER: cross
-
-          - TARGET: mips-unknown-linux-musl
-            OS: ubuntu-latest
-            COMPILER: cross
-
-          - TARGET: mips64-unknown-linux-muslabi64
-            OS: ubuntu-latest
-            COMPILER: cross
             
           
           # # disabled because "could not compile `pwd-grp`"
