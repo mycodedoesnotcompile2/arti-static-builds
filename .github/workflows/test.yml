@@ -137,19 +137,35 @@ jobs:
             OS: ubuntu-latest
             COMPILER: cross
             
-          - TARGET: x86_64-unknown-illumos
-            OS: ubuntu-latest
-            COMPILER: cross
-
-
-          - TARGET: arm-linux-androideabi
-            OS: ubuntu-latest
-            COMPILER: cross
 
           - TARGET: armv7-linux-androideabi
             OS: ubuntu-latest
             COMPILER: cross
 
+
+          - TARGET: i586-unknown-linux-gnu
+            OS: ubuntu-latest
+            COMPILER: cross
+
+
+          - TARGET: i586-unknown-linux-musl
+            OS: ubuntu-latest
+            COMPILER: cross
+
+            
+          - TARGET: i686-unknown-linux-musl
+            OS: ubuntu-latest
+            COMPILER: cross
+
+          - TARGET: mips-unknown-linux-musl
+            OS: ubuntu-latest
+            COMPILER: cross
+
+          - TARGET: mips64-unknown-linux-muslabi64
+            OS: ubuntu-latest
+            COMPILER: cross
+            
+          
           # # disabled because "could not compile `pwd-grp`"
           # - TARGET: x86_64-pc-solaris
           #   OS: ubuntu-latest
