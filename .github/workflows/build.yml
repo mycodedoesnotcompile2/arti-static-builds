@@ -164,10 +164,6 @@ jobs:
             OS: ubuntu-latest
             CC_COMPILER: cross
 
-          - TARGET: powerpc64le-unknown-linux-musl
-            OS: ubuntu-latest
-            CC_COMPILER: cross
-
           - TARGET: aarch64-linux-android
             OS: ubuntu-latest
             CC_COMPILER: cross
@@ -176,18 +172,21 @@ jobs:
             OS: ubuntu-latest
             CC_COMPILER: cross
 
-          - TARGET: x86_64-linux-android
-            OS: ubuntu-latest
-            CC_COMPILER: cross
-          
-          - TARGET: i686-linux-android
+          - TARGET: mips64el-unknown-linux-gnuabi64
             OS: ubuntu-latest
             CC_COMPILER: cross
 
-          - TARGET: armv5te-unknown-linux-musleabi
+          - TARGET: mips64el-unknown-linux-muslabi64
             OS: ubuntu-latest
             CC_COMPILER: cross
-            
+
+          - TARGET: mipsel-unknown-linux-gnu
+            OS: ubuntu-latest
+            CC_COMPILER: cross
+
+          - TARGET: mipsel-unknown-linux-musl
+            OS: ubuntu-latest
+            CC_COMPILER: cross
             
     runs-on: ${{ matrix.OS }}
     container:
