@@ -107,7 +107,7 @@ jobs:
 
           - TARGET: arm-unknown-linux-musleabihf
             OS: ubuntu-latest
-            CC_PKG: crossbuild-essential-armhf
+            CC_COMPILER: cross
           
           - TARGET: arm-unknown-linux-gnueabihf
             OS: ubuntu-latest
@@ -115,7 +115,7 @@ jobs:
 
           - TARGET: arm-unknown-linux-musleabi
             OS: ubuntu-latest
-            CC_PKG: gcc-arm-linux-gnueabi
+            CC_COMPILER: cross
           
           - TARGET: aarch64-apple-darwin
             OS: macos-latest
