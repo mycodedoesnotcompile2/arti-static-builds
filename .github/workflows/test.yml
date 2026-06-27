@@ -84,8 +84,8 @@ jobs:
           
           - TARGET: mips64el-unknown-linux-gnuabi64
             OS: ubuntu-latest
-            CC_COMPILER: cross
             CC_PKG: gcc-mips64el-linux-gnuabi64 g++-mips64el-linux-gnuabi64
+            #CC_COMPILER: cross
 
           # - TARGET: mips64el-unknown-linux-muslabi64
           #   OS: ubuntu-latest
@@ -246,13 +246,3 @@ jobs:
           
           mkdir -p "/tmp/hashes"
           mv -f *.sha256.txt "/tmp/hashes/"
-  
-     - name: Create a new Github release
-       uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b #v3.0.1
-       with:
-         make_latest: true
-         body_path: ${{ env.RELEASE_NOTES }}
-         name: version ${{ env.ARTI_VERSION }} - build ${{ env.ARTI_CURRENT_COMMIT_ID }}
-         tag_name: ${{ env.ARTI_CURRENT_COMMIT_ID }}
-         files: |
-           /tmp/results/${{ env.ARTI_BIN_NAME }}-*
