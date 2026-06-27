@@ -1,9 +1,9 @@
 name: Build binary
 
 on:
-  #workflow_dispatch
-  schedule:
-    - cron: '5 5 * * *'
+  workflow_dispatch
+  #schedule:
+  #  - cron: '5 5 * * *'
 
 permissions:
   contents: write
@@ -51,10 +51,10 @@ jobs:
           echo "ARTI_CURRENT_COMMIT_ID=$ARTI_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
 
           # case: no new commit => abort the workflow
-          if [[ $ARTI_PREBUILT_LATEST_TAG == $ARTI_CURRENT_COMMIT_ID ]]; then
-            echo "[!] No new version to compile"
-            exit 100
-          fi
+          # if [[ $ARTI_PREBUILT_LATEST_TAG == $ARTI_CURRENT_COMMIT_ID ]]; then
+          #   echo "[!] No new version to compile"
+          #   exit 100
+          # fi
 
       - name: Get arti version
         id: release_version_cargo_get
@@ -173,22 +173,14 @@ jobs:
           - TARGET: armv7-linux-androideabi
             OS: ubuntu-latest
             CC_COMPILER: cross
-
-          # - TARGET: mips64el-unknown-linux-gnuabi64
-          #   OS: ubuntu-latest
-          #   CC_COMPILER: cross
-
-          # - TARGET: mips64el-unknown-linux-muslabi64
-          #   OS: ubuntu-latest
-          #   CC_COMPILER: cross
-
-          # - TARGET: mipsel-unknown-linux-gnu
-          #   OS: ubuntu-latest
-          #   CC_COMPILER: cross
-
-          # - TARGET: mipsel-unknown-linux-musl
-          #   OS: ubuntu-latest
-          #   CC_COMPILER: cross
+            
+          - TARGET: mips64el-unknown-linux-gnuabi64
+            OS: ubuntu-latest
+            CC_PKG: gcc-mips64el-linux-gnuabi64 g++-mips64el-linux-gnuabi64
+           
+          - TARGET: mips64el-unknown-linux-muslabi64
+            OS: ubuntu-latest
+            CC_COMPILER: cross
             
     runs-on: ${{ matrix.OS }}
     container:
@@ -245,7 +237,13 @@ jobs:
 
       
       - name: Install rust target
-        run: rustup target add $TARGET
+        run: |
+          if [[ $TARGET == "mips"* ]]; then
+            rustup toolchain install nightly
+            rustup component add rust-src --toolchain nightly
+          else
+            rustup target add $TARGET
+          fi
         
       - name: Run build
         run: |
@@ -260,7 +258,12 @@ jobs:
           if [[ -z "${CC_COMPILER:-}" ]]; then
             CC_COMPILER="cargo"
           fi
-          $CC_COMPILER build -p arti --release --target $TARGET --features static
+          
+          if [[ $TARGET == "mips"* ]]; then
+            $CC_COMPILER +nightly build -Z build-std=std,panic_abort -p arti --release --target $TARGET --features static
+          else
+            $CC_COMPILER build -p arti --release --target $TARGET --features static
+          fi
                 
       - name: List build information
         run: |
