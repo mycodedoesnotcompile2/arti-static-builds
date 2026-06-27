@@ -86,7 +86,6 @@ jobs:
 
           - TARGET: i686-unknown-linux-musl
             OS: ubuntu-latest
-            CC_COMPILER: cross
             
           - TARGET: i686-unknown-linux-gnu
             OS: ubuntu-latest
@@ -108,7 +107,7 @@ jobs:
 
           - TARGET: arm-unknown-linux-musleabi
             OS: ubuntu-latest
-            CC_PKG: crossbuild-essential-armhf
+            CC_PKG: crossbuild-essential-armhf gcc-arm-linux-gnueabi
 
           - TARGET: arm-unknown-linux-musleabihf
             OS: ubuntu-latest
