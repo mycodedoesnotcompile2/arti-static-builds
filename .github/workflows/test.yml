@@ -168,7 +168,7 @@ jobs:
           if [[ -z "${CC_COMPILER:-}" ]]; then
             CC_COMPILER="cargo"
           fi
-          $CC_COMPILER build --release --target $TARGET --features static
+          $CC_COMPILER build -p arti --release --target $TARGET --features static
                 
       - name: List build information
         run: |
