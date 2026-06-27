@@ -240,10 +240,7 @@ jobs:
 
       
       - name: Install rust target
-        run: |
-          if [[ $TARGET != "mips"* ]]; then
-            rustup target add $TARGET
-          fi
+        run: rustup target add $TARGET
         
       - name: Run build
         run: |
