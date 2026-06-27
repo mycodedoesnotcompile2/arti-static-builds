@@ -5,8 +5,8 @@ on:
   #schedule:
   #  - cron: '5 5 * * *'
 
-# permissions:
-#   contents: write
+permissions:
+  contents: write
 
 env:
   CARGO_TERM_COLOR: always
@@ -78,25 +78,42 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - TARGET: x86_64-unknown-linux-gnu
-            OS: ubuntu-latest
-          
           - TARGET: x86_64-unknown-linux-musl
             OS: ubuntu-latest
-          
-          - TARGET: aarch64-unknown-linux-gnu
-            OS: ubuntu-24.04-arm
+            
+          - TARGET: x86_64-unknown-linux-gnu
+            OS: ubuntu-latest
+
+          - TARGET: i686-unknown-linux-musl
+            OS: ubuntu-latest
+            CC_COMPILER: cross
+            CC_PKG: gcc-multilib
+            
+          - TARGET: i686-unknown-linux-gnu
+            OS: ubuntu-latest
+            CC_PKG: gcc-multilib
           
           - TARGET: aarch64-unknown-linux-musl
             OS: ubuntu-24.04-arm
-          
-          - TARGET: armv7-unknown-linux-gnueabihf
-            OS: ubuntu-latest
-            CC_PKG: crossbuild-essential-armhf
+            
+          - TARGET: aarch64-unknown-linux-gnu
+            OS: ubuntu-24.04-arm
           
           - TARGET: armv7-unknown-linux-musleabihf
             OS: ubuntu-latest
             CC_COMPILER: cross
+          
+          - TARGET: armv7-unknown-linux-gnueabihf
+            OS: ubuntu-latest
+            CC_PKG: crossbuild-essential-armhf
+
+          - TARGET: arm-unknown-linux-musleabi
+            OS: ubuntu-latest
+            CC_PKG: crossbuild-essential-armhf
+
+          - TARGET: arm-unknown-linux-musleabihf
+            OS: ubuntu-latest
+            CC_PKG: crossbuild-essential-armhf
           
           - TARGET: arm-unknown-linux-gnueabihf
             OS: ubuntu-latest
@@ -110,18 +127,18 @@ jobs:
           
           - TARGET: x86_64-pc-windows-msvc
             OS: windows-latest
-
+            
+          - TARGET: x86_64-pc-windows-gnu
+            OS: windows-latest
+            
           - TARGET: aarch64-pc-windows-msvc
             OS: windows-11-arm
+          # ------------------------------
 
           - TARGET: x86_64-unknown-freebsd
             OS: ubuntu-latest
             CC_COMPILER: cross
-
-          - TARGET: i686-unknown-linux-gnu
-            OS: ubuntu-latest
-            CC_PKG: gcc-multilib
-
+            
           - TARGET: i586-unknown-linux-gnu
             OS: ubuntu-latest
             CC_COMPILER: cross
@@ -129,14 +146,6 @@ jobs:
           - TARGET: i586-unknown-linux-musl
             OS: ubuntu-latest
             CC_COMPILER: cross
-            
-          - TARGET: i686-unknown-linux-musl
-            OS: ubuntu-latest
-            CC_COMPILER: cross
-            CC_PKG: gcc-multilib
-
-          - TARGET: x86_64-pc-windows-gnu
-            OS: windows-latest
 
           - TARGET: i686-pc-windows-msvc
             OS: windows-latest
@@ -149,13 +158,38 @@ jobs:
             OS: ubuntu-latest
             CC_PKG: gcc-riscv64-linux-gnu
 
+          - TARGET: riscv64gc-unknown-linux-musl
+            OS: ubuntu-latest
+            CC_COMPILER: cross
+
           - TARGET: powerpc64le-unknown-linux-gnu
             OS: ubuntu-latest
             CC_COMPILER: cross
 
+          - TARGET: powerpc64le-unknown-linux-musl
+            OS: ubuntu-latest
+            CC_COMPILER: cross
+
+          - TARGET: aarch64-linux-android
+            OS: ubuntu-latest
+            CC_COMPILER: cross
+            
           - TARGET: armv7-linux-androideabi
             OS: ubuntu-latest
             CC_COMPILER: cross
+
+          - TARGET: x86_64-linux-android
+            OS: ubuntu-latest
+            CC_COMPILER: cross
+          
+          - TARGET: i686-linux-android
+            OS: ubuntu-latest
+            CC_COMPILER: cross
+
+          - TARGET: armv5te-unknown-linux-musleabi
+            OS: ubuntu-latest
+            CC_COMPILER: cross
+            
             
     runs-on: ${{ matrix.OS }}
     container:
@@ -293,7 +327,7 @@ jobs:
           mv -f *.sha256.txt "/tmp/hashes/"
   
      - name: Create a new Github release
-       uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe #v2.6.1
+       uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b #v3.0.1
        with:
          make_latest: true
          body_path: ${{ env.RELEASE_NOTES }}
