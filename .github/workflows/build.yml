@@ -87,7 +87,6 @@ jobs:
           - TARGET: i686-unknown-linux-musl
             OS: ubuntu-latest
             CC_COMPILER: cross
-            CC_PKG: gcc-multilib
             
           - TARGET: i686-unknown-linux-gnu
             OS: ubuntu-latest
