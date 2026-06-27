@@ -87,9 +87,9 @@ jobs:
             CC_PKG: gcc-mips64el-linux-gnuabi64 g++-mips64el-linux-gnuabi64
             #CC_COMPILER: cross
 
-          # - TARGET: mips64el-unknown-linux-muslabi64
-          #   OS: ubuntu-latest
-          #   CC_COMPILER: cross
+          - TARGET: mips64el-unknown-linux-muslabi64
+            OS: ubuntu-latest
+            CC_COMPILER: cross
 
           # - TARGET: mipsel-unknown-linux-gnu
           #   OS: ubuntu-latest
@@ -158,6 +158,7 @@ jobs:
 
           if [[ $TARGET == "mips"* ]]; then
             rustup toolchain install nightly
+            rustup component add rust-src --toolchain nightly
           else
             rustup target add $TARGET
           fi
