@@ -67,7 +67,6 @@ jobs:
         id: release_version
         run: |
           ARTI_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
-          #echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_ENV
           echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_OUTPUT
 
 
