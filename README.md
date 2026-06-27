@@ -9,7 +9,7 @@ The building workflow is [here](https://github.com/mycodedoesnotcompile2/arti-st
 
 See the [Github release page](https://github.com/mycodedoesnotcompile2/arti-static-builds/releases/latest/) of this repository to access prebuilt binaries for different:
 - OSes: Linux, Windows, MacOS, Android
-- architectures: x86, x64, arm5/7/64, powerpc64le, riscv64gc
+- architectures: x86, x64, arm5/7/64, powerpc64le, riscv64gc, mips64el
 - libc: GNU, musl
 
 
