@@ -14,6 +14,7 @@ env:
   ARTI_BIN_NAME: arti
   ARTI_CRATE: /tmp/arti/crates/arti
   APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
+  CHOCO: choco install -y -r --no-progress
 
 defaults:
   run:
@@ -165,7 +166,7 @@ jobs:
       OS: ${{ matrix.OS }}
       CONTAINER: ${{ matrix.CONTAINER }}
       CC_PKG: ${{ matrix.CC_PKG }}
-      COMPILER: ${{ matrix.COMPILER }}
+      CC_COMPILER: ${{ matrix.CC_COMPILER }}
       CROSS_CONFIG: /tmp/cross.toml
 
       ARTI_PREBUILT_LATEST_TAG: ${{ needs.checkout.outputs.ARTI_PREBUILT_LATEST_TAG }}
@@ -180,7 +181,7 @@ jobs:
       - name: Install and configure dependencies
         run: |
           if [[ $OS == windows* ]]; then
-            choco install -y -r --no-progress wget
+            $CHOCO wget
           fi
           
           if [[ $OS == ubuntu* ]]; then
