@@ -2,8 +2,9 @@ name: Tests
 
 on:
   workflow_dispatch
-  # schedule:
-  #   - cron: '5 5 * * *'
+  #schedule:
+  #  - cron: '5 5 * * *'
+
 
 env:
   CARGO_TERM_COLOR: always
@@ -11,6 +12,7 @@ env:
   ARTI_BIN_NAME: arti
   ARTI_CRATE: /tmp/arti/crates/arti
   APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
+  CHOCO: choco install -y -r --no-progress
 
 defaults:
   run:
@@ -63,6 +65,7 @@ jobs:
         id: release_version
         run: |
           ARTI_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
+          #echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_ENV
           echo "ARTI_VERSION=$ARTI_VERSION" >> $GITHUB_OUTPUT
 
 
@@ -73,111 +76,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - TARGET: x86_64-unknown-linux-gnu
-          #   OS: ubuntu-latest
-          
-          # - TARGET: x86_64-unknown-linux-musl
-          #   OS: ubuntu-latest
-          
-          # - TARGET: aarch64-unknown-linux-gnu
-          #   OS: ubuntu-24.04-arm
-          
-          # - TARGET: aarch64-unknown-linux-musl
-          #   OS: ubuntu-24.04-arm
-          
-          # - TARGET: armv7-unknown-linux-gnueabihf
-          #   OS: ubuntu-latest
-          
-          # # - TARGET: armv7-unknown-linux-musleabihf
-          # #   OS: ubuntu-latest
-          # #   CONTAINER: ghcr.io/rust-cross/rust-musl-cross:armv7-musleabihf
-          
-          # - TARGET: arm-unknown-linux-gnueabihf
-          #   OS: ubuntu-latest
-          
-          # - TARGET: aarch64-apple-darwin
-          #   OS: macos-latest
-
-          # - TARGET: x86_64-apple-darwin
-          #   OS: macos-26-intel
-
-          - TARGET: i686-unknown-linux-gnu
-            OS: ubuntu-latest
-
-          # disabled because of this error x86_64-unknown-netbsd/bin/ld: cannot find -lkvm
-          # - TARGET: x86_64-unknown-netbsd
-          #   OS: ubuntu-latest
-          #   COMPILER: cross
-
-          - TARGET: x86_64-unknown-freebsd
-            OS: ubuntu-latest
-            COMPILER: cross
-
-          # disabled because merlin doesn't support big-endian
-          # - TARGET: s390x-unknown-linux-gnu
-          #   OS: ubuntu-latest
-          #   CC_PKG: gcc-s390x-linux-gnu
-          #   COMPILER: cross
-
-          - TARGET: riscv64gc-unknown-linux-gnu
-            OS: ubuntu-latest
-            CC_PKG: gcc-riscv64-linux-gnu
-
-          # disabled because merlin doesn't support big-endian
-          # - TARGET: powerpc-unknown-linux-gnu
-          #   OS: ubuntu-latest
-          #   CC_PKG: gcc-powerpc-linux-gnu
-
-          # - TARGET: powerpc64-unknown-linux-gnu
-          #   OS: ubuntu-latest
-          #   CC_PKG: gcc-powerpc64-linux-gnu
-
-          
-          - TARGET: powerpc64le-unknown-linux-gnu
-            OS: ubuntu-latest
-            COMPILER: cross
-            
-
-          - TARGET: armv7-linux-androideabi
-            OS: ubuntu-latest
-            COMPILER: cross
-
-
-          - TARGET: i586-unknown-linux-gnu
-            OS: ubuntu-latest
-            COMPILER: cross
-
-
-          - TARGET: i586-unknown-linux-musl
-            OS: ubuntu-latest
-            COMPILER: cross
-
-            
+           
           - TARGET: i686-unknown-linux-musl
             OS: ubuntu-latest
-            COMPILER: cross
-            
+            CC_PKG: gcc-multilib
           
-          # # disabled because "could not compile `pwd-grp`"
-          # - TARGET: x86_64-pc-solaris
+          # - TARGET: mips64el-unknown-linux-gnuabi64
           #   OS: ubuntu-latest
-          #   COMPILER: cross
-          
-          - TARGET: i686-pc-windows-msvc
-            OS: windows-latest
+          #   CC_COMPILER: cross
 
-          - TARGET: i686-pc-windows-gnu
+          # - TARGET: mips64el-unknown-linux-muslabi64
+          #   OS: ubuntu-latest
+          #   CC_COMPILER: cross
+
+          - TARGET: mipsel-unknown-linux-gnu
             OS: ubuntu-latest
-            CC_PKG: gcc-mingw-w64-i686
-          
-          - TARGET: x86_64-pc-windows-msvc
-            OS: windows-latest
+            CC_PKG: gcc-mipsel-linux-gnu g++-mipsel-linux-gnu
 
-          - TARGET: x86_64-pc-windows-gnu
-            OS: windows-latest
-
-          # - TARGET: aarch64-pc-windows-msvc
-          #   OS: windows-11-arm
+          # - TARGET: mipsel-unknown-linux-musl
+          #   OS: ubuntu-latest
+          #   CC_COMPILER: cross
             
     runs-on: ${{ matrix.OS }}
     container:
@@ -188,7 +106,7 @@ jobs:
       OS: ${{ matrix.OS }}
       CONTAINER: ${{ matrix.CONTAINER }}
       CC_PKG: ${{ matrix.CC_PKG }}
-      COMPILER: ${{ matrix.COMPILER }}
+      CC_COMPILER: ${{ matrix.CC_COMPILER }}
       CROSS_CONFIG: /tmp/cross.toml
 
       ARTI_PREBUILT_LATEST_TAG: ${{ needs.checkout.outputs.ARTI_PREBUILT_LATEST_TAG }}
@@ -199,22 +117,16 @@ jobs:
         run: |
           cd /tmp/
           git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti.git' arti
-
       
       - name: Install and configure dependencies
         run: |
-          set -xe
           if [[ $OS == windows* ]]; then
-            choco install -y -r --no-progress wget
+            $CHOCO wget
           fi
           
-          if [[ $OS =~ ^ubuntu.*$ ]]; then
+          if [[ $OS == ubuntu* ]]; then
             $APT update
             $APT install libsqlite3-dev
-          fi
-
-          if [[ $OS == ubuntu* && $TARGET == i686* ]]; then
-            $APT install gcc-multilib
           fi
 
           # for musl builds
@@ -222,27 +134,28 @@ jobs:
             $APT install musl-tools
           fi
 
-          # for arm targets
-          if [[ $TARGET == "arm"* ]]; then
-            $APT install crossbuild-essential-armhf
-            cd "$ARTI_ROOT_DIR"
-            cargo install --force --locked bindgen-cli
-          fi
-
           # for everything else
           if [[ -n "${CC_PKG:-}" ]]; then
             $APT install "$CC_PKG"
+          fi
+
+          # for arm targets
+          if [[ $TARGET == "arm"* ]]; then
+            cd "$ARTI_ROOT_DIR"
+            cargo install --force --locked bindgen-cli
           fi
           
           cargo install cross
           
           wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/cross.toml" -O "$CROSS_CONFIG"
           wget -nv "https://github.com/mycodedoesnotcompile2/rust_compile_config_files/raw/refs/heads/main/config.toml" -O ~/.cargo/config.toml
-          
+
       
       - name: Install rust target
-        run: rustup target add $TARGET
-
+        run: |
+          if [[ $TARGET != "mips"* ]]; then
+            rustup target add $TARGET
+          fi
         
       - name: Run build
         run: |
@@ -254,11 +167,11 @@ jobs:
             grep -A 2 -B 2 'allow(arithmetic_overflow)' "$ARTI_ROOT_DIR/crates/tor-memquota/src/lib.rs"
           fi
 
-          if [[ -z "${COMPILER:-}" ]]; then
-            COMPILER="cargo"
+          if [[ -z "${CC_COMPILER:-}" ]]; then
+            CC_COMPILER="cargo"
           fi
-          $COMPILER build --release --target $TARGET --features static
-      
+          $CC_COMPILER build --release --target $TARGET --features static
+                
       - name: List build information
         run: |
           OLD_ARTI_BIN_DIR="$ARTI_ROOT_DIR/target/$TARGET/release"
@@ -269,7 +182,7 @@ jobs:
           fi
           
           ARTI_BIN_PATH="${{ runner.temp }}/$ARTI_BIN_NAME-$ARTI_VERSION-$TARGET"
-          if [[ $OS =~ ^windows ]]; then
+          if [[ $OS == windows* ]]; then
             ARTI_BIN_PATH="${{ runner.temp }}/$ARTI_BIN_NAME-$ARTI_VERSION-$TARGET.exe"
           fi
           ARTI_BIN_HASH_PATH="$ARTI_BIN_PATH.sha256.txt"
@@ -321,3 +234,13 @@ jobs:
           
           mkdir -p "/tmp/hashes"
           mv -f *.sha256.txt "/tmp/hashes/"
+  
+     - name: Create a new Github release
+       uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b #v3.0.1
+       with:
+         make_latest: true
+         body_path: ${{ env.RELEASE_NOTES }}
+         name: version ${{ env.ARTI_VERSION }} - build ${{ env.ARTI_CURRENT_COMMIT_ID }}
+         tag_name: ${{ env.ARTI_CURRENT_COMMIT_ID }}
+         files: |
+           /tmp/results/${{ env.ARTI_BIN_NAME }}-*
