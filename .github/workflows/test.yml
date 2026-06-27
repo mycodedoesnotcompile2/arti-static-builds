@@ -77,22 +77,23 @@ jobs:
       matrix:
         include:
            
-          - TARGET: i686-unknown-linux-musl
-            OS: ubuntu-latest
-            CC_COMPILER: cross
-            CC_PKG: gcc-multilib
-          
-          # - TARGET: mips64el-unknown-linux-gnuabi64
+          # - TARGET: i686-unknown-linux-musl
           #   OS: ubuntu-latest
           #   CC_COMPILER: cross
+          #   CC_PKG: gcc-multilib
+          
+          - TARGET: mips64el-unknown-linux-gnuabi64
+            OS: ubuntu-latest
+            CC_COMPILER: cross
+            CC_PKG: gcc-mips64el-linux-gnuabi64 g++-mips64el-linux-gnuabi64
 
           # - TARGET: mips64el-unknown-linux-muslabi64
           #   OS: ubuntu-latest
           #   CC_COMPILER: cross
 
-          - TARGET: mipsel-unknown-linux-gnu
-            OS: ubuntu-latest
-            CC_PKG: gcc-mipsel-linux-gnu g++-mipsel-linux-gnu
+          # - TARGET: mipsel-unknown-linux-gnu
+          #   OS: ubuntu-latest
+          #   CC_PKG: gcc-mipsel-linux-gnu g++-mipsel-linux-gnu
 
           # - TARGET: mipsel-unknown-linux-musl
           #   OS: ubuntu-latest
@@ -153,7 +154,15 @@ jobs:
 
       
       - name: Install rust target
-        run: rustup target add $TARGET
+        run: |
+
+          if [[ $TARGET == "mips"* ]]; then
+            rustup toolchain install nightly
+          else
+            rustup target add $TARGET
+          fi
+
+          
         
       - name: Run build
         run: |
@@ -168,8 +177,13 @@ jobs:
           if [[ -z "${CC_COMPILER:-}" ]]; then
             CC_COMPILER="cargo"
           fi
-          $CC_COMPILER build -p arti --release --target $TARGET --features static
-                
+
+          if [[ $TARGET == "mips"* ]]; then
+            $CC_COMPILER +nightly build -Z build-std=std,panic_abort -p arti --release --target $TARGET --features static
+          else
+            $CC_COMPILER build -p arti --release --target $TARGET --features static
+          fi
+                          
       - name: List build information
         run: |
           OLD_ARTI_BIN_DIR="$ARTI_ROOT_DIR/target/$TARGET/release"
