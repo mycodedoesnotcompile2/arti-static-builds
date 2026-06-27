@@ -7,7 +7,10 @@ The great ["arti"](https://arti.torproject.org/) tool, from the TOR project, aut
 
 The building workflow is [here](https://github.com/mycodedoesnotcompile2/arti-static-builds/blob/main/.github/workflows/build.yml).
 
-See the [Github release page](https://github.com/mycodedoesnotcompile2/arti-static-builds/releases/latest/) of this repository to access prebuilt binaries for different OSes (Linux, Windows, MacOS), different architectures (x64, arm5/7/64) and different libc (GNU, musl).
+See the [Github release page](https://github.com/mycodedoesnotcompile2/arti-static-builds/releases/latest/) of this repository to access prebuilt binaries for different:
+- OSes: Linux, Windows, MacOS, Android
+- architectures: x86, x64, arm5/7/64, powerpc64le, riscv64gc
+- libc: GNU, musl
 
 
 Interesting resources
