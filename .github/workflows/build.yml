@@ -83,9 +83,6 @@ jobs:
             
           - TARGET: x86_64-unknown-linux-gnu
             OS: ubuntu-latest
-
-          - TARGET: i686-unknown-linux-musl
-            OS: ubuntu-latest
             
           - TARGET: i686-unknown-linux-gnu
             OS: ubuntu-latest
@@ -111,7 +108,7 @@ jobs:
           
           - TARGET: arm-unknown-linux-gnueabihf
             OS: ubuntu-latest
-            CC_PKG: crossbuild-essential-armel
+            CC_PKG: gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
           - TARGET: arm-unknown-linux-musleabi
             OS: ubuntu-latest
