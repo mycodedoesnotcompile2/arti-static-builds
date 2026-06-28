@@ -103,7 +103,8 @@ jobs:
             OS: windows-latest
 
           - TARGET: i686-win7-windows-gnu
-            OS: windows-latest
+            OS: ubuntu-latest
+            CC_PKG: gcc-mingw-w64-i686
 
           - TARGET: x86_64-win7-windows-msvc
             OS: windows-latest
