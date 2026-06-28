@@ -168,7 +168,7 @@ jobs:
       - name: Install rust target
         run: |
 
-          if [[ $TARGET == "mips"* ]]; then
+          if [[ $TARGET == "mips"* || $TARGET == *"win7"* ]]; then
             rustup toolchain install nightly
             rustup component add rust-src --toolchain nightly
           else
@@ -191,7 +191,7 @@ jobs:
             CC_COMPILER="cargo"
           fi
 
-          if [[ $TARGET == "mips"* ]]; then
+          if [[ $TARGET == "mips"* || $TARGET == *"win7"* ]]; then
             $CC_COMPILER +nightly build -Z build-std=std,panic_abort -p arti --release --target $TARGET --features static
           else
             $CC_COMPILER build -p arti --release --target $TARGET --features static
