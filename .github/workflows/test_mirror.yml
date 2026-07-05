@@ -1,9 +1,9 @@
 name: Mirror
 
 on:
-  workflow_dispatch
-  #schedule:
-  #  - cron: '5 5 * * *'
+  #workflow_dispatch
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 minutes
 
 permissions:
   contents: write
@@ -19,10 +19,8 @@ jobs:
       - name: Prerequisites
         run: |
           mkdir -p ~/.ssh
-
           echo "${{ secrets.SSH_PRIVKEY_TO_PUSH_MIRROR }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-
           ssh-keyscan github.com >> ~/.ssh/known_hosts
       
       - name: Mirror
