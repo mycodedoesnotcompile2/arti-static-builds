@@ -1,9 +1,9 @@
 name: Build binary
 
 on:
-  #workflow_dispatch
-  schedule:
-    - cron: '5 5 * * *'
+  workflow_dispatch
+  #schedule:
+  #  - cron: '5 5 * * *'
 
 permissions:
   contents: write
@@ -13,6 +13,7 @@ env:
   ARTI_ROOT_DIR: /tmp/arti
   ARTI_BIN_NAME: arti
   ARTI_CRATE: /tmp/arti/crates/arti
+  ARTI_REPO: https://github.com/mycodedoesnotcompile2/arti_mirror.git
   APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
   CHOCO: choco install -y -r --no-progress
 
@@ -43,7 +44,7 @@ jobs:
         id: release_commit_id
         run: |
           cd /tmp/
-          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti.git' -o arti
+          git clone --depth=1 "$ARTI_REPO" -o arti
 
           cd /tmp/arti/
           ARTI_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
@@ -200,7 +201,7 @@ jobs:
       - name: Clone arti repo
         run: |
           cd /tmp/
-          git clone --depth=1 'https://gitlab.torproject.org/tpo/core/arti.git' arti
+          git clone --depth=1 "$ARTI_REPO" arti
       
       - name: Install and configure dependencies
         run: |
