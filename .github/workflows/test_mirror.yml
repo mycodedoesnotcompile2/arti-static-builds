@@ -1,0 +1,27 @@
+name: Mirror
+
+on:
+  workflow_dispatch
+  #schedule:
+  #  - cron: '5 5 * * *'
+
+permissions:
+  contents: write
+
+env:
+  APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
+  ARTI_GIT_DIR: /tmp/arti
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/
+          git clone --mirror "https://gitlab.torproject.org/tpo/core/arti.git" "$ARTI_GIT_DIR"
+          
+          cd "$ARTI_GIT_DIR"
+          git push --mirror https://x-access-token:${GH_TOKEN}@github.com/mycodedoesnotcompile2/arti_mirror
