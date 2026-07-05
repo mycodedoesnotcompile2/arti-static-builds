@@ -16,12 +16,19 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
+      - name: Prerequisites
+        run: |
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.SSH_PRIVKEY_TO_PUSH_MIRROR }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+      
       - name: Mirror
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd /tmp/
           git clone --mirror "https://gitlab.torproject.org/tpo/core/arti.git" "$ARTI_GIT_DIR"
           
           cd "$ARTI_GIT_DIR"
-          git push --mirror https://x-access-token:${GH_TOKEN}@github.com/mycodedoesnotcompile2/arti_mirror
+          git push --mirror git@github.com:mycodedoesnotcompile2/arti_mirror
